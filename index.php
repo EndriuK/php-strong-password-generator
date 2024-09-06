@@ -1,17 +1,19 @@
 <?php
-
+session_start();
 include 'functions.php';
 
-$generatedPassword = '';
+if (isset($_GET['password_length'])) {
+    $passwordLength = intval($_GET['password_length']);
 
-if (isset($_GET['input_string'])) {
-    $inputString = $_GET['input_string'];
-    $length = strlen($inputString);
-
-    if ($length > 0) {
-        $generatedPassword = randomPassword($length);
+    if ($passwordLength > 0) {
+        $generatedPassword = randomPassword($passwordLength);
+        $_SESSION['generatedPassword'] = $generatedPassword;
+        header("Location: result.php");
+        exit;
     } else {
-        $generatedPassword = "Inserisci una stringa valida.";
+        $_SESSION['error'] = "Inserisci un numero valido.";
+        header("Location: index.php");
+        exit;
     }
 }
 ?>
@@ -31,16 +33,16 @@ if (isset($_GET['input_string'])) {
         <h1>Generatore di Password Casuali</h1>
         <form action="index.php" method="get">
             <div class="mb-3">
-                <label for="input_string" class="form-label">Inserisci una stringa (A-Z, a-z, 0-9, caratteri speciali)</label>
-                <input type="text" class="form-control" id="input_string" name="input_string" required>
+                <label for="password_length" class="form-label">Inserisci la lunghezza della password</label>
+                <input type="number" class="form-control" id="password_length" name="password_length" min="1" required>
             </div>
             <button type="submit" class="btn btn-primary">Genera</button>
         </form>
 
-        <?php if ($generatedPassword): ?>
-            <div class="mt-4">
-                <label class="form-label">Password generata:</label>
-                <input type="text" class="form-control" value="<?= htmlspecialchars($generatedPassword) ?>" readonly>
+        <?php if (isset($_SESSION['error'])): ?>
+            <div class="text-danger mt-3">
+                <?= $_SESSION['error'];
+                unset($_SESSION['error']); ?>
             </div>
         <?php endif; ?>
     </div>
